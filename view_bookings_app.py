@@ -224,10 +224,8 @@ class ViewBookingsApp:
             self.cancel_button.config(state=tk.NORMAL)
             self.find_driver_button.config(state=tk.NORMAL)
 
-
-
 def save_data():
-        app.save_records()
+    app.save_records()
 
 if __name__ == "__main__":
     root = tk.Tk()
