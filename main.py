@@ -19,38 +19,6 @@ class BookingWindow(tk.Toplevel):
         self.booking_window_frame = CTkFrame(self, width=449, height=434, border_width=2, fg_color="#F6D2E0")
         self.booking_window_frame.place(relx=0.5, rely=0.5, anchor="center")
 
-        # Pick-up Address
-        self.pickup_label = CTkLabel(self.booking_window_frame, text="Pick-up Address:", text_color="#000000", font=font2)
-        self.pickup_label.place(relx=0.1, rely=0.1, anchor="w")
-
-        self.pickup_entry = CTkEntry(self.booking_window_frame, width=200, fg_color="#C8E7F5", text_color="#000000")
-        self.pickup_entry.place(relx=0.5, rely=0.1, anchor="w")
-
-        # Drop-off Address
-        self.dropoff_label = CTkLabel(self.booking_window_frame, text="Drop-off Address:", text_color="#000000", font=font2)
-        self.dropoff_label.place(relx=0.1, rely=0.2, anchor="w")
-
-        self.dropoff_entry = CTkEntry(self.booking_window_frame, width=200, fg_color="#C8E7F5", text_color="#000000")
-        self.dropoff_entry.place(relx=0.5, rely=0.2, anchor="w")
-
-        # Pick-up Date
-        self.pickup_date_label = CTkLabel(self.booking_window_frame, text="Pick-up Date:", text_color="#000000", font=font2)
-        self.pickup_date_label.place(relx=0.1, rely=0.3, anchor="w")
-
-        self.pickup_date_entry = CTkEntry(self.booking_window_frame, width=200, fg_color="#C8E7F5", text_color="#000000")
-        self.pickup_date_entry.place(relx=0.5, rely=0.3, anchor="w")
-
-        # Pick-up Time
-        self.pickup_time_label = CTkLabel(self.booking_window_frame, text="Pick-up Time:", text_color="#000000", font=font2)
-        self.pickup_time_label.place(relx=0.1, rely=0.4, anchor="w")
-
-        self.pickup_time_entry = CTkEntry(self.booking_window_frame, width=200, fg_color="#C8E7F5", text_color="#000000")
-        self.pickup_time_entry.place(relx=0.5, rely=0.4, anchor="w")
-
-        # Submit button
-        self.submit_button = CTkButton(self.booking_window_frame, text="Submit", fg_color="#000000", text_color="#C8E7F5")
-        self.submit_button.place(relx=0.5, rely=0.9, anchor="center")
-
         # Center the booking window
         self.center_window()
 
@@ -266,9 +234,6 @@ class RideApp:
             image_label = tk.Label(popup, image=image, bg="#C8E7F5")
             image_label.image = image
             image_label.place(relx=0.5, rely=0.37, anchor="center")
-
-        book_button = tk.Button(popup, text="BOOK NOW", font=("Helvetica", 13, "bold"), bg="#F6D2E0", command=lambda: self.open_booking_window(vehicle_type, popup))
-        book_button.place(relx=0.5, rely=0.86, anchor="center", relwidth=0.6)
 
         close_button = tk.Button(popup, text="CANCEL", font=("Helvetica", 11), command=popup.destroy)
         close_button.place(relx=0.5, rely=0.92, anchor="center", relwidth=0.6)
