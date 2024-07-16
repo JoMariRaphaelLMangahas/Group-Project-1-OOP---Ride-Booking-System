@@ -7,16 +7,21 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 from geopy.distance import distance
 import tkinter.messagebox as messagebox
-from view_bookings_app import ViewBookingsApp
 
-class BookingApp:
+from .view_bookings_window import ViewBookingsWindow
+from .booking_db import BookingDB
+
+class BookingInterface:
     def __init__(self, master, records):
         self.master = master
+        self.db = BookingDB("booking_data.db")
         self.master.title("Booking a Cab")
         self.records = records
         self.setup_gui()
 
-        self.records = self.load_data()
+        if not self.records:
+            self.records = self.load_records()
+
         self.input_fields = {}
         self.map_view = None
 
@@ -28,7 +33,7 @@ class BookingApp:
         self.create_widgets()
         self.center_window()
 
-    def load_data(self):
+    def load_records(self):
         try:
             with open("booking_data.dat", "rb") as file:
                 return pickle.load(file)
@@ -38,6 +43,7 @@ class BookingApp:
     def save_data(self):
         with open("booking_data.dat", "wb") as file:
             pickle.dump(self.records, file)
+
 
     def add_booking(self):
         if not all(self.input_fields[field_name].get() for field_name in ('month', 'day', 'year', 'hour', 'minute', 'pick_up_address', 'destination', 'vehicle_type')):
@@ -104,7 +110,7 @@ class BookingApp:
         }.get(vehicle_type, BaseFare)
 
         return vehicle_class().calculate_fare(distance_km)
-    
+
     def create_widgets(self):
         self.frame = tk.Frame(self.master)
         self.frame.pack(expand=True, fill="both")
@@ -173,7 +179,7 @@ class BookingApp:
 
     def open_view_bookings(self):
         view_window = tk.Toplevel(self.master)
-        ViewBookingsApp(view_window, self.records, self.save_data)
+        ViewBookingsWindow(view_window, self.records, self.save_data)
 
     def setup_gui(self):
         # Define your booking app GUI here
@@ -209,7 +215,7 @@ class PremiumCabFare(BaseFare):
 def main():
     master = tk.Tk()  # Or tk.Toplevel() if this is not your main application window
     records = []  # Initialize or load your records here
-    app = BookingApp(master, records)
+    app = BookingInterface(master, records)
     master.mainloop()
 
 if __name__ == "__main__":

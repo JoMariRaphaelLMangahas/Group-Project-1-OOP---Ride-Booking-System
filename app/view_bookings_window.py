@@ -1,9 +1,10 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import pickle
-from driver_interface import DriverInterface
 
-class ViewBookingsApp:
+from .driver_interface import DriverInterface
+
+class ViewBookingsWindow:
     def __init__(self, root, records, save_data_callback):
         self.root = root
         self.records = records
@@ -53,11 +54,11 @@ class ViewBookingsApp:
         self.find_driver_button = tk.Button(button_frame, text="Find a Driver", command=self.find_driver)
         self.find_driver_button.pack(side=tk.LEFT, padx=10, pady=5)
 
-        complete_button = tk.Button(button_frame, text="Complete Booking", command=self.complete_booking)
-        complete_button.pack(side=tk.LEFT, padx=10)
+        self.complete_button = tk.Button(button_frame, text="Complete Booking", command=self.complete_booking)
+        self.complete_button.pack(side=tk.LEFT, padx=10)
 
-        cancel_button = tk.Button(button_frame, text="Cancel Booking", command=self.cancel_booking)
-        cancel_button.pack(side=tk.LEFT, padx=10)
+        self.cancel_button = tk.Button(button_frame, text="Cancel Booking", command=self.cancel_booking)
+        self.cancel_button.pack(side=tk.LEFT, padx=10)
 
         delete_button = tk.Button(button_frame, text="Delete Selected Booking", command=self.delete_selected_booking)
         delete_button.pack(side=tk.LEFT, padx=10)
@@ -205,7 +206,7 @@ class ViewBookingsApp:
     def save_records(self):
         with open("booking_data.dat", "wb") as file:
             pickle.dump(self.records, file)
-    
+
     def handle_driver_assignment(self, index, action):
         # action: "complete" or "cancel"
         driver_id = self.records[index][9]
@@ -214,7 +215,7 @@ class ViewBookingsApp:
                 # Remove driver from DriverInterface (dummy implementation)
                 # You need to implement a mechanism to remove the driver from DriverInterface
                 print(f"Removing driver {driver_id} from DriverInterface...")
-    
+
     def update_button_states(self, index):
         if index < 0 or index >= len(self.records):
             return
