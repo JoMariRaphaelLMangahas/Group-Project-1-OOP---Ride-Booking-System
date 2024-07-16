@@ -17,11 +17,9 @@ class ViewBookingsApp:
         self.frame = tk.Frame(self.root)
         self.frame.pack(expand=True, fill="both")
 
-        # Define columns with fixed widths
         columns = ("Booking Number", "Status", "Date", "Time", "Pick-up address", "Destination", "Vehicle Type", "Distance", "Cost", "Driver")
         self.treeview = ttk.Treeview(self.frame, columns=columns, show="headings")
 
-        # Configure column headings and set fixed widths
         column_widths = {
             "Booking Number": 120,
             "Status": 100,
@@ -39,15 +37,12 @@ class ViewBookingsApp:
             self.treeview.heading(col, text=col)
             self.treeview.column(col, width=column_widths[col], anchor='center')
 
-        # Pack the Treeview widget
         self.treeview.pack(side="left", expand=True, fill="both")
 
-        # Add vertical scrollbar
         yscrollbar = ttk.Scrollbar(self.frame, orient=tk.VERTICAL, command=self.treeview.yview)
         yscrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.treeview.config(yscrollcommand=yscrollbar.set)
 
-        # Add horizontal scrollbar
         xscrollbar = ttk.Scrollbar(self.frame, orient=tk.HORIZONTAL, command=self.treeview.xview)
         xscrollbar.pack(side=tk.BOTTOM, fill=tk.X)
         self.treeview.config(xscrollcommand=xscrollbar.set)
@@ -69,6 +64,11 @@ class ViewBookingsApp:
 
         delete_all_button = tk.Button(button_frame, text="Delete All Bookings", command=self.delete_all_bookings)
         delete_all_button.pack(side=tk.LEFT, padx=10)
+
+        # Add the View Bookings button to refresh the data
+        view_bookings_button = tk.Button(button_frame, text="View Bookings", command=self.load_records)
+        view_bookings_button.pack(side=tk.LEFT, padx=10)
+
 
     def display_records(self):
         for record in self.records:
@@ -149,18 +149,24 @@ class ViewBookingsApp:
     def delete_selected_booking(self):
         selected_item = self.treeview.selection()
         if selected_item:
-            # Get the selected item's index
             item_id = selected_item[0]
             item_index = self.treeview.index(item_id)
-            
+
+            # Remove the driver from the interface if assigned
+            if len(self.records[item_index]) > 9:
+                driver_id = self.records[item_index][9]
+                if driver_id:
+                    self.remove_driver_from_interface(driver_id)
+
             # Delete the record from the list
             del self.records[item_index]
-            
+
             # Update the treeview
             self.update_treeview()
-            
+
             # Save the updated records
-            self.save_data_callback()
+            self.save_records()
+
         else:
             messagebox.showwarning("No Selection", "Please select a booking to delete.")
 
