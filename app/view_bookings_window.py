@@ -4,18 +4,21 @@ import pickle
 
 from .driver_interface import DriverInterface
 
-class ViewBookingsWindow:
-    def __init__(self, root, records, save_data_callback):
-        self.root = root
-        self.records = records
-        self.save_data_callback = save_data_callback
-        self.root.title("View Bookings")
+class ViewBookingsWindow(tk.Toplevel):
+    def __init__(self, master, *args, **kwargs):
+        super().__init__(master, *args, **kwargs)
+        self.title("View Bookings")
+        self.master = master
+
+        self.db = self.master.db
+        self.records = self.master.records
+        self.load_callback = self.master.load_records
 
         self.create_widgets()
         self.load_records()
 
     def create_widgets(self):
-        self.frame = tk.Frame(self.root)
+        self.frame = tk.Frame(self)
         self.frame.pack(expand=True, fill="both")
 
         columns = ("Booking Number", "Status", "Date", "Time", "Pick-up address", "Destination", "Vehicle Type", "Distance", "Cost", "Driver")
@@ -48,7 +51,7 @@ class ViewBookingsWindow:
         xscrollbar.pack(side=tk.BOTTOM, fill=tk.X)
         self.treeview.config(xscrollcommand=xscrollbar.set)
 
-        button_frame = tk.Frame(self.root)
+        button_frame = tk.Frame(self)
         button_frame.pack(pady=10)
 
         self.find_driver_button = tk.Button(button_frame, text="Find a Driver", command=self.find_driver)
@@ -73,74 +76,81 @@ class ViewBookingsWindow:
 
     def display_records(self):
         for record in self.records:
-            self.treeview.insert("", "end", values=record)
+            # self.treeview.insert("", "end", values=record.to_treeview_tuple())
+            print(record.to_treeview_tuple())
 
     def complete_booking(self):
-        selected_item = self.treeview.selection()
-        if selected_item:
-            index = self.treeview.index(selected_item)
-            if 0 <= index < len(self.records):
-                if self.records[index][1] == "Completed":
-                    messagebox.showinfo("Already Completed", f"The booking number {self.records[index][0]} is already marked as completed.")
-                    return
+        pass
+        # selected_item = self.treeview.selection()
+        # if selected_item:
+        #     index = self.treeview.index(selected_item)
+        #     if 0 <= index < len(self.records):
+        #         if self.records[index][1] == "Completed":
+        #             messagebox.showinfo("Already Completed", f"The booking number {self.records[index][0]} is already marked as completed.")
+        #             return
 
-                if len(self.records[index]) > 9:
-                    driver_id = self.records[index][9]
-                    if driver_id:
-                        self.remove_driver_from_interface(driver_id)
+        #         if len(self.records[index]) > 9:
+        #             driver_id = self.records[index][9]
+        #             if driver_id:
+        #                 self.remove_driver_from_interface(driver_id)
 
-                self.records[index] = tuple(list(self.records[index][:1]) + ["Completed"] + list(self.records[index][2:]))
-                self.update_treeview()
-                self.save_data_callback()
+        #         self.records[index] = tuple(list(self.records[index][:1]) + ["Completed"] + list(self.records[index][2:]))
+        #         self.update_treeview()
+        #         self.load_records()
+        #         self.load_callback()
 
-                self.update_button_states(index)
-            else:
-                messagebox.showwarning("Invalid Index", "Selected index is out of range.")
-        else:
-            messagebox.showwarning("No Selection", "Please select a booking to mark as completed.")
+        #         self.update_button_states(index)
+        #     else:
+        #         messagebox.showwarning("Invalid Index", "Selected index is out of range.")
+        # else:
+        #     messagebox.showwarning("No Selection", "Please select a booking to mark as completed.")
 
     def cancel_booking(self):
-        selected_item = self.treeview.selection()
-        if selected_item:
-            index = self.treeview.index(selected_item[0])
-            if 0 <= index < len(self.records):
-                if self.records[index][1] == "Cancelled":
-                    messagebox.showinfo("Already Cancelled", f"The booking number {self.records[index][0]} is already marked as cancelled.")
-                    return
+        pass
 
-                if len(self.records[index]) > 9:
-                    driver_id = self.records[index][9]
-                    if driver_id:
-                        self.remove_driver_from_interface(driver_id)
+        # selected_item = self.treeview.selection()
+        # if selected_item:
+        #     index = self.treeview.index(selected_item[0])
+        #     if 0 <= index < len(self.records):
+        #         if self.records[index][1] == "Cancelled":
+        #             messagebox.showinfo("Already Cancelled", f"The booking number {self.records[index][0]} is already marked as cancelled.")
+        #             return
 
-                self.records[index] = tuple(list(self.records[index][:1]) + ["Cancelled"] + list(self.records[index][2:]))
-                self.update_treeview()
-                self.save_data_callback()
+        #         if len(self.records[index]) > 9:
+        #             driver_id = self.records[index][9]
+        #             if driver_id:
+        #                 self.remove_driver_from_interface(driver_id)
 
-                self.update_button_states(index)
-            else:
-                messagebox.showwarning("Invalid Index", "Selected index is out of range.")
-        else:
-            messagebox.showwarning("No Selection", "Please select a booking to mark as cancelled.")
+        #         self.records[index] = tuple(list(self.records[index][:1]) + ["Cancelled"] + list(self.records[index][2:]))
+        #         self.update_treeview()
+        #         self.load_records()
+        #         self.load_callback()
+
+        #         self.update_button_states(index)
+        #     else:
+        #         messagebox.showwarning("Invalid Index", "Selected index is out of range.")
+        # else:
+        #     messagebox.showwarning("No Selection", "Please select a booking to mark as cancelled.")
 
     def find_driver(self):
-        selected_item = self.treeview.selection()
-        if selected_item:
-            index = self.treeview.index(selected_item)
-            if 0 <= index < len(self.records):
-                status = self.records[index][1]
-                if status == "Completed":
-                    messagebox.showinfo("Already Completed", f"The booking number {self.records[index][0]} is already marked as completed.")
-                elif status == "Cancelled":
-                    messagebox.showinfo("Already Cancelled", f"The booking number {self.records[index][0]} is already marked as cancelled.")
-                else:
-                    driver_root = tk.Toplevel(self.root)
-                    driver_interface = DriverInterface(driver_root, self.choose_driver)
-                    driver_root.grab_set()
-            else:
-                messagebox.showwarning("Invalid Index", "Selected index is out of range.")
-        else:
-            messagebox.showwarning("No Selection", "Please select a booking to find a driver.")
+        pass
+        # selected_item = self.treeview.selection()
+        # if selected_item:
+        #     index = self.treeview.index(selected_item)
+        #     if 0 <= index < len(self.records):
+        #         status = self.records[index][1]
+        #         if status == "Completed":
+        #             messagebox.showinfo("Already Completed", f"The booking number {self.records[index][0]} is already marked as completed.")
+        #         elif status == "Cancelled":
+        #             messagebox.showinfo("Already Cancelled", f"The booking number {self.records[index][0]} is already marked as cancelled.")
+        #         else:
+        #             driver_root = tk.Toplevel(self)
+        #             driver_interface = DriverInterface(driver_root, self.choose_driver)
+        #             driver_root.grab_set()
+        #     else:
+        #         messagebox.showwarning("Invalid Index", "Selected index is out of range.")
+        # else:
+        #     messagebox.showwarning("No Selection", "Please select a booking to find a driver.")
 
     def remove_driver_from_interface(self, driver_id):
         # Implement logic to remove driver_id from DriverInterface
@@ -148,34 +158,35 @@ class ViewBookingsWindow:
         print(f"Removing driver {driver_id} from DriverInterface...")
 
     def delete_selected_booking(self):
-        selected_item = self.treeview.selection()
-        if selected_item:
-            item_id = selected_item[0]
-            item_index = self.treeview.index(item_id)
+        pass
+        # selected_item = self.treeview.selection()
+        # if selected_item:
+        #     item_id = selected_item[0]
+        #     item_index = self.treeview.index(item_id)
 
-            # Remove the driver from the interface if assigned
-            if len(self.records[item_index]) > 9:
-                driver_id = self.records[item_index][9]
-                if driver_id:
-                    self.remove_driver_from_interface(driver_id)
+        #     # Remove the driver from the interface if assigned
+        #     if len(self.records[item_index]) > 9:
+        #         driver_id = self.records[item_index][9]
+        #         if driver_id:
+        #             self.remove_driver_from_interface(driver_id)
 
-            # Delete the record from the list
-            del self.records[item_index]
+        #     # Delete the record from the list
+        #     del self.records[item_index]
 
-            # Update the treeview
-            self.update_treeview()
+        #     # Update the treeview
+        #     self.update_treeview()
 
-            # Save the updated records
-            self.save_records()
+        #     # Save the updated records
+        #     self.save_records()
 
-        else:
-            messagebox.showwarning("No Selection", "Please select a booking to delete.")
+        # else:
+        #     messagebox.showwarning("No Selection", "Please select a booking to delete.")
 
     def delete_all_bookings(self):
         if messagebox.askyesno("Confirm", "Are you sure you want to delete all bookings?"):
             self.records.clear()
             self.update_treeview()
-            self.save_data_callback()
+            self.load_callback()
 
     def update_treeview(self):
         # Clear current treeview
@@ -191,17 +202,12 @@ class ViewBookingsWindow:
             index = self.treeview.index(selected_item)
             self.records[index] = tuple(list(self.records[index][:9]) + [driver_id])
             self.update_treeview()
-            self.save_data_callback()
+            self.load_callback()
         else:
             messagebox.showwarning("No Selection", "Please select a booking.")
 
     def load_records(self):
-        try:
-            with open("booking_data.dat", "rb") as file:
-                self.records = pickle.load(file)
-        except FileNotFoundError:
-            self.records = []
-        self.update_treeview()
+        self.records = self.db.load_records()
 
     def save_records(self):
         with open("booking_data.dat", "wb") as file:
@@ -231,11 +237,3 @@ class ViewBookingsWindow:
             self.cancel_button.config(state=tk.NORMAL)
             self.find_driver_button.config(state=tk.NORMAL)
 
-def save_data():
-    app.save_records()
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = ViewBookingsApp(root, [], save_data)  # Initialize with an empty records list and the save_data callback
-    app.load_records()  # Load records from the file
-    root.mainloop()

@@ -58,7 +58,7 @@ class AuthWindow(tk.Frame):
 
     def login(self):
         username = self.username_entry.get()
-        password = self.passsword_entry.get()
+        password = self.password_entry.get()
 
 if __name__ == "__main__":
     root = tk.Tk()

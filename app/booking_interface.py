@@ -10,64 +10,54 @@ import tkinter.messagebox as messagebox
 
 from .view_bookings_window import ViewBookingsWindow
 from .booking_db import BookingDB
+from .record_model import Record
 
-class BookingInterface:
-    def __init__(self, master, records):
+class BookingInterface(tk.Toplevel):
+    def __init__(self, master):
+        super().__init__(master)  # Initialize the Toplevel component
         self.master = master
-        self.db = BookingDB("booking_data.db")
-        self.master.title("Booking a Cab")
-        self.records = records
-        self.setup_gui()
+        self.db = self.master.db
 
-        if not self.records:
-            self.records = self.load_records()
+        self.title("Booking a Cab")  # Set the window title
+
+        self.records: list[Record] = []
+        self.load_records()
 
         self.input_fields = {}
         self.map_view = None
-
         self.geolocator = Nominatim(user_agent="booking_app")
 
-        # Initialize last booking number
-        self.last_booking_number = len(self.records) + 1 if self.records else 1
-
+        self.setup_gui()
         self.create_widgets()
         self.center_window()
 
     def load_records(self):
-        try:
-            with open("booking_data.dat", "rb") as file:
-                return pickle.load(file)
-        except FileNotFoundError:
-            return []
-
-    def save_data(self):
-        with open("booking_data.dat", "wb") as file:
-            pickle.dump(self.records, file)
-
+        self.records = self.db.retrieve_records()
 
     def add_booking(self):
+        # Data Validation
         if not all(self.input_fields[field_name].get() for field_name in ('month', 'day', 'year', 'hour', 'minute', 'pick_up_address', 'destination', 'vehicle_type')):
             messagebox.showerror("Error", "Please fill in all the required information.")
             return
 
+        # Get the date and time
         date_str = f"{self.input_fields['month'].get()}-{self.input_fields['day'].get()}-{self.input_fields['year'].get()}"
         time_str = f"{self.input_fields['hour'].get()}:{self.input_fields['minute'].get()}"
         date = datetime.datetime.strptime(date_str, "%B-%d-%Y").date()
         time = datetime.datetime.strptime(time_str, "%H:%M").time()
 
+        # Get pick up adddress, destination, vehicle vehicle_type
         pick_up_address = self.input_fields['pick_up_address'].get()
         destination = self.input_fields['destination'].get()
         vehicle_type = self.input_fields['vehicle_type'].get()
 
-        booking_number = self.last_booking_number  # Use the last booking number
-        booking = (booking_number, "Pending", date, time, pick_up_address, destination, vehicle_type)
-        self.records.append(booking)
+        dist, cost = self.add_pinpoints_and_path(pick_up_address, destination, vehicle_type)
 
-        self.add_pinpoints_and_path(pick_up_address, destination, vehicle_type)
+        # Required Fields (status, date, time, pick_up_address, destination, vehicle_type, distance, cost, driver)
+        booking_number = self.db.add_record(("Pending", date_str, time_str, pick_up_address, destination, vehicle_type, dist, cost, ""))
 
-        self.last_booking_number = self.last_booking_number + 1  # Increment the last booking number
+        self.records.append(Record(booking_number, "Pending", date_str, time_str, pick_up_address, destination, vehicle_type, dist, cost, ""))
 
-        self.save_data()
 
     def geocode_address(self, address):
         try:
@@ -81,7 +71,7 @@ class BookingInterface:
             print(f"Geocoding error: {e}")
             return None
 
-    def add_pinpoints_and_path(self, pick_up_address, destination, vehicle_type):
+    def add_pinpoints_and_path(self, pick_up_address, destination, vehicle_type) -> tuple[float, float]:
         pickup_coords = self.geocode_address(pick_up_address)
         destination_coords = self.geocode_address(destination)
 
@@ -96,10 +86,9 @@ class BookingInterface:
 
             cost = self.calculate_fare(dist, vehicle_type)
 
-            record = list(self.records[-1])
-            record.append(f"{dist:.2f} km")
-            record.append(f"\u20b1{cost:.2f}")
-            self.records[-1] = tuple(record)
+            return (dist,cost)
+
+        return 0.0, 0.0
 
     def calculate_fare(self, distance_km, vehicle_type):
         vehicle_class = {
@@ -112,7 +101,7 @@ class BookingInterface:
         return vehicle_class().calculate_fare(distance_km)
 
     def create_widgets(self):
-        self.frame = tk.Frame(self.master)
+        self.frame = tk.Frame(self)
         self.frame.pack(expand=True, fill="both")
 
         tk.Label(self.frame, text="Date:").grid(row=0, column=0, padx=5, pady=5)
@@ -170,22 +159,21 @@ class BookingInterface:
         self.map_view.set_tile_server("https://mt0.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}&s=Ga")
 
     def center_window(self):
-        self.master.update_idletasks()
-        width = self.master.winfo_width()
-        height = self.master.winfo_height()
-        x = (self.master.winfo_screenwidth() // 2) - (width // 2)
-        y = (self.master.winfo_screenheight() // 2) - (height // 2)
-        self.master.geometry(f'{width}x{height}+{x}+{y}')
+        self.update_idletasks()
+        width = self.winfo_width()
+        height = self.winfo_height()
+        x = (self.winfo_screenwidth() // 2) - (width // 2)
+        y = (self.winfo_screenheight() // 2) - (height // 2)
+        self.geometry(f'{width}x{height}+{x}+{y}')
 
     def open_view_bookings(self):
-        view_window = tk.Toplevel(self.master)
-        ViewBookingsWindow(view_window, self.records, self.save_data)
+        ViewBookingsWindow(self)
 
     def setup_gui(self):
         # Define your booking app GUI here
-        self.master.geometry("400x650")
+        self.geometry("400x650")
         self.center_window()
-        self.label = tk.Label(self.master)
+        self.label = tk.Label(self)
         self.label.pack(pady=20)
 
 # Base fare class and subclasses for different vehicle types

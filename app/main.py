@@ -6,6 +6,7 @@ import pickle
 from .view_bookings_window import ViewBookingsWindow
 from .booking_interface import BookingInterface
 from .booking_info_window import BookingInfoWindow
+from .booking_db import BookingDB
 from .user_login_booking import AuthWindow
 from .history_window import HistoryWindow
 
@@ -13,8 +14,15 @@ class RideApp(tk.Tk):
     def __init__(self):
         super().__init__()
 
+        self.db = BookingDB("booking_data.db")
+
+        # Initialize records
         self.records = []
+        self.load_records()
+
         self.view_bookings_window = None  # Initialize the window reference
+        self.booking_interface_window = None  # Initialize the window reference
+        self.history_window = None  # Initialize the window reference
 
         # Fonts
         font1 = CTkFont(family="Candara", size=70, weight="bold", slant="italic")
@@ -87,7 +95,7 @@ class RideApp(tk.Tk):
         self.prem_cab_button.place(relx=0.83, rely=0.89, anchor="center")
 
         # Profile button
-        self.book_now_button = tk.Button(self, text="BOOK NOW", font=("Candara", 20, "bold"), height=2, width=20, bg="#FFFFFF", command=self.open_book_now)
+        self.book_now_button = tk.Button(self, text="BOOK NOW", font=("Candara", 20, "bold"), height=2, width=20, bg="#FFFFFF", command=self.open_booking_app)
         self.book_now_button.place(relx=0.30, rely=0.15, anchor="ne")
 
         # Bookings button
@@ -110,21 +118,12 @@ class RideApp(tk.Tk):
         self.prem_cab_frame.bind("<Configure>", self.on_frame_configure)
         self.prem_cab_image_label.bind("<Configure>", self.on_label_configure)
 
-        # Initialize records
-        self.records = self.load_data()
-
         self.view_bookings_window = None  # To store reference of ViewBookingsApp window if needed
 
     def logout(self):
         confirm = messagebox.askokcancel("Log Out", "Are you sure you want to log out?")
         if confirm:
-            pass
-            # self.destroy()  # Close the current RideApp window
-            # root = tk.Tk()
-            # app = user_login_booking.MobileApp(root)
-            # root.mainloop()
-
-
+            self.destroy()
 
     def on_frame_configure(self, event):
         # Get the new size of the frame
@@ -225,35 +224,8 @@ class RideApp(tk.Tk):
         popup.destroy()  # Close the details popup
         booking_window = BookingInfoWindow(self, vehicle_type)
 
-    def save_data(self):
-        with open("booking_data.dat", "wb") as file:
-            pickle.dump(self.records, file)
-
-    def load_data(self):
-        try:
-            with open("booking_data.dat", "rb") as file:
-                return pickle.load(file)
-        except FileNotFoundError:
-            return []
-
-    def save_records(self):
-        with open("booking_data.dat", "wb") as file:
-            pickle.dump(self.records, file)
-
-    def open_view_bookings(self):
-        if self.view_bookings_window is None or not tk.Toplevel.winfo_exists(self.view_bookings_window):
-            self.view_bookings_window = tk.Toplevel(self)
-            self.view_bookings_window.title("View Bookings")
-            self.view_bookings_window.geometry("800x600")  # Adjust the size as needed
-            self.view_bookings_window.transient(self)
-            self.view_bookings_window.grab_set()  # Make the window modal
-            ViewBookingsWindow(self.view_bookings_window, self.records, self.save_records)
-        else:
-            self.view_bookings_window.lift()
-
-    def open_book_now(self):
-        booking_window = tk.Toplevel(self)
-        BookingInterface(booking_window, self.records)
+    def load_records(self):
+        self.records = self.db.retrieve_records()
 
     def setup_gui(self):
         # Set up your main GUI here
@@ -261,18 +233,27 @@ class RideApp(tk.Tk):
                                          height=2, width=20, bg="#FFFFFF", command=self.open_booking_app)
         self.book_now_button.pack(pady=20)
 
-    def open_booking_app(self):
-        booking_window = tk.Toplevel(self)  # Create a new Toplevel window
-        BookingInterface(booking_window)
+    def open_view_bookings(self):
+        if self.view_bookings_window is None or not self.view_bookings_window.winfo_exists():
+            self.view_bookings_window = ViewBookingsWindow(self)
+        else:
+            self.view_bookings_window.lift()
+
+    def open_book_now(self):
+        if self.booking_interface_window is None or not self.booking_interface_window.winfo_exists():
+            self.booking_interface_window = BookingInterface(self)
+        else:
+            self.booking_interface_window.lift()
+
+    def open_booking_app(self):  # Assuming this should also open BookingInterface
+        if self.booking_interface_window is None or not self.booking_interface_window.winfo_exists():
+            self.booking_interface_window = BookingInterface(self)
+        else:
+            self.booking_interface_window.lift()
 
     def open_history(self):
         if self.history_window is None or not tk.Toplevel.winfo_exists(self.history_window):
-            self.history_window = tk.Toplevel(self)
-            self.history_window.title("Booking History")
-            self.history_window.geometry("800x600")  # Adjust size as needed
-            self.history_window.transient(self)
-            self.history_window.grab_set()  # Make window modal
-            HistoryWindow(self.history_window, self.records)
+            self.history_window = HistoryWindow(self)
         else:
             self.history_window.lift()
 

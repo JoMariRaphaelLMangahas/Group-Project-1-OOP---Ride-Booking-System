@@ -1,17 +1,21 @@
 import tkinter as tk
 from tkinter import ttk
 
-class HistoryWindow:
-    def __init__(self, root, records):
-        self.root = root
-        self.records = records
-        self.root.title("Booking History")
+class HistoryWindow(tk.Toplevel):
+    def __init__(self, master, *args, **kwargs):
+        super().__init__(master, *args, **kwargs)
+        self.master = master
+        self.records = self.master.records
+        self.title("Booking History")
+        self.geometry("800x600")  # Adjust size as needed
+        self.transient(self)
+        self.grab_set()  # Make window modal
 
         self.create_widgets()
         self.display_history()
 
     def create_widgets(self):
-        self.frame = tk.Frame(self.root)
+        self.frame = tk.Frame(self)
         self.frame.pack(expand=True, fill="both")
 
         # Define columns with fixed widths
