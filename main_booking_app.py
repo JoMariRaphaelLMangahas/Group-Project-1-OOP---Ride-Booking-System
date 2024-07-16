@@ -59,7 +59,7 @@ class BookingApp:
 
         self.add_pinpoints_and_path(pick_up_address, destination, vehicle_type)
 
-        self.last_booking_number += 1  # Increment the last booking number
+        self.last_booking_number = self.last_booking_number + 1  # Increment the last booking number
 
         self.save_data()
 
@@ -104,7 +104,7 @@ class BookingApp:
         }.get(vehicle_type, BaseFare)
 
         return vehicle_class().calculate_fare(distance_km)
-
+    
     def create_widgets(self):
         self.frame = tk.Frame(self.master)
         self.frame.pack(expand=True, fill="both")
@@ -192,19 +192,19 @@ class MotorFare(BaseFare):
         if distance_km <= 2:
             return 50
         else:
-            return 50 + (distance_km - 2) * 10
+            return 50 + (distance_km - 2) * 10 + distance_km * 2
 
 class CarFare(BaseFare):
     def calculate_fare(self, distance_km):
-        return 50 + distance_km * 18
+        return 50 + distance_km * 18 + distance_km * 10
 
 class TaxiCabFare(BaseFare):
     def calculate_fare(self, distance_km):
-        return 40 + distance_km * 13.5
+        return 40 + distance_km * 13.5 + distance_km * 5
 
 class PremiumCabFare(BaseFare):
     def calculate_fare(self, distance_km):
-        return 100 + distance_km * 40
+        return 100 + distance_km * 40 + distance_km * 100
 
 def main():
     master = tk.Tk()  # Or tk.Toplevel() if this is not your main application window
