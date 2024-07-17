@@ -13,7 +13,7 @@ class Record:
 
     def from_tuple(self, record: tuple):
         try:
-            for i, field in enumerate(record):
+            for index, field in enumerate(record):
                 match index:
                     case 0:
                         self.booking_number = field
@@ -41,9 +41,11 @@ class Record:
             print(f"Error accessing tuple to record: {e}")
 
     def to_tuple(self) -> tuple:
+        # Returns a tuple of TEN record details in type (<INT, STR, STR, STR, STR, STR, STR, FLOAT, FLOAT, STR>)
         return (self.booking_number, self.status, self.date, self.time, self.pick_up_address, self.destination, self.vehicle_type, self.distance, self.cost, self.driver)
 
     def to_treeview_tuple(self) -> tuple:
+        # Returns a tuple of TEN record details in type string with formatting
         return (str(self.booking_number),
             self.status,
             self.date,
@@ -55,3 +57,6 @@ class Record:
             f"\u20b1{self.cost:.2f}",
             self.driver
         )
+
+    def __repr__(self):
+        return f"Record({self.booking_number}, {self.status}, {self.date}, {self.time}, {self.pick_up_address}, {self.destination}, {self.vehicle_type}, {self.distance}, {self.cost}, {self.driver})"

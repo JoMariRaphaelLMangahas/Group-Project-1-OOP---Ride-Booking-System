@@ -16,6 +16,7 @@ class ViewBookingsWindow(tk.Toplevel):
 
         self.create_widgets()
         self.load_records()
+        self.display_records()
 
     def create_widgets(self):
         self.frame = tk.Frame(self)
@@ -76,11 +77,17 @@ class ViewBookingsWindow(tk.Toplevel):
 
     def display_records(self):
         for record in self.records:
-            # self.treeview.insert("", "end", values=record.to_treeview_tuple())
-            print(record.to_treeview_tuple())
+            self.treeview.insert("", "end", values=record.to_treeview_tuple())
 
     def complete_booking(self):
         pass
+
+        # COMMENT FOR DEVELOPERS
+        # RETRIEVE the record object from self.records using the index of the selected item in the treeview
+        # USE self.db.update_record(record) where record is a record object (IMPORTANT), to update the self.status of the booking to "Completed" in the database
+        # Handle exceptions and display appropriate messages
+
+        # < OLD CODE BELOW >
         # selected_item = self.treeview.selection()
         # if selected_item:
         #     index = self.treeview.index(selected_item)
@@ -108,6 +115,12 @@ class ViewBookingsWindow(tk.Toplevel):
     def cancel_booking(self):
         pass
 
+        # COMMENT FOR DEVELOPERS
+        # RETRIEVE the record object from self.records using the index of the selected item in the treeview
+        # USE self.db.update_record(record) where record is a record object (IMPORTANT), to update the self.status of the booking to "Cancelled" in the database
+        # Handle exceptions and display appropriate messages
+
+        # < OLD CODE BELOW >
         # selected_item = self.treeview.selection()
         # if selected_item:
         #     index = self.treeview.index(selected_item[0])
@@ -134,6 +147,8 @@ class ViewBookingsWindow(tk.Toplevel):
 
     def find_driver(self):
         pass
+
+        # < OLD CODE BELOW >
         # selected_item = self.treeview.selection()
         # if selected_item:
         #     index = self.treeview.index(selected_item)
@@ -159,6 +174,13 @@ class ViewBookingsWindow(tk.Toplevel):
 
     def delete_selected_booking(self):
         pass
+
+        # NOTE FOR DEVELOPERS
+        # RETRIEVE the record object from self.records using the index of the selected item in the treeview
+        # USE self.db.delete_record(record) where record is the record object (IMPORTANT), to delete the selected booking from the database
+        # Handle exceptions and display appropriate messages
+
+        # < OLD CODE BELOW >
         # selected_item = self.treeview.selection()
         # if selected_item:
         #     item_id = selected_item[0]
@@ -207,11 +229,7 @@ class ViewBookingsWindow(tk.Toplevel):
             messagebox.showwarning("No Selection", "Please select a booking.")
 
     def load_records(self):
-        self.records = self.db.load_records()
-
-    def save_records(self):
-        with open("booking_data.dat", "wb") as file:
-            pickle.dump(self.records, file)
+        self.records = self.db.retrieve_records()
 
     def handle_driver_assignment(self, index, action):
         # action: "complete" or "cancel"

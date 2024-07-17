@@ -42,9 +42,9 @@ class BookingDB:
             c.execute("SELECT * FROM bookings")
             rows = c.fetchall()
             records = []
-            for row in rows:
+            for row_data in rows:
                 record = Record()
-                record.from_tuple(row)
+                record.from_tuple(row_data)
                 records.append(record)
             return records
         except Error as e:
